@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/rabbit
+        http://www.springframework.org/schema/rabbit/spring-rabbit-1.1.xsd">
+
+	<description>Example configuration to get you started.</description>
+
+	<context:component-scan base-package="com.dao.RabbitMQ" />
+	
+	<!-- A reference to the org.springframework.amqp.rabbit.connection.ConnectionFactory -->
+    <rabbit:connection-factory id="connectionFactory"
+        publisher-confirms="true" />
+ 
+    <!-- Creates a org.springframework.amqp.rabbit.core.RabbitTemplate for access to the broker -->
+    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory"
+        exchange="dExchange" />
+ 
+    <!-- Creates a org.springframework.amqp.rabbit.core.RabbitAdmin    to manage exchanges, queues and bindings -->
+    <rabbit:admin connection-factory="connectionFactory"/>
+ 
+    <!-- Creates a queue for consumers to retrieve messages -->
+    <rabbit:queue name="helloworld.queue"/>
+    
+    <rabbit:direct-exchange name="dExchange">
+        <rabbit:bindings>
+            <rabbit:binding queue="helloworld.queue" />
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+    
+    <bean id="messageHandler" class="com.dao.RabbitMQ.MessageHandler" />
+    
+    <rabbit:listener-container connection-factory="connectionFactory" acknowledge="manual">
+        <rabbit:listener ref="messageHandler" queue-names="helloworld.queue"/>
+    </rabbit:listener-container>
+</beans>
